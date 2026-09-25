@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deriv Even/Odd Bot</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0d1117;
+    color: #ffffff;
+}
+
+.container {
+    max-width: 850px;
+    margin: auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #8b949e;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 15px;
+}
+
+.status {
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    background: #21262d;
+    margin-bottom: 15px;
+}
+
+.balance {
+    font-size: 25px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.stat {
+    background: #21262d;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat span {
+    display: block;
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.digits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 10px;
+}
+
+.digit {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #21262d;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.signal {
+    text-align: center;
+    font-size: 25px;
+    font-weight: bold;
+    padding: 20px;
+    background: #21262d;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    border: 0;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.connect {
+    background: #2ea043;
+    color: white;
+}
+
+.start {
+    background: #238636;
+    color: white;
+}
+
+.stop {
+    background: #da3633;
+    color: white;
+}
+
+button:disabled {
+    opacity: 0.5;
+}
+
+.warning {
+    color: #f0f6fc;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>DERIV EVEN/ODD BOT</h1>
+    <div class="subtitle">
+        Volatility 50 Index
+    </div>
+
+    <div class="card">
+
+        <div id="status" class="status">
+            🔴 Disconnected
+        </div>
+
+        <div class="balance">
+            Balance: <span id="balance">$--</span>
+        </div>
+
+        <button class="connect" id="connectBtn">
+            CONNECT TO DERIV
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Market Data</h3>
+
+        <div class="stats">
+
+            <div class="stat">
+                Even
+                <span id="evenPercent">--%</span>
+            </div>
+
+            <div class="stat">
+                Odd
+                <span id="oddPercent">--%</span>
+            </div>
+
+        </div>
+
+        <h3>Recent Digits</h3>
+
+        <div class="digits" id="digits">
+            Waiting...
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Strategy Signal</h3>
+
+        <div class="signal" id="signal">
+            WAITING FOR DATA
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Bot Controls</h3>
+
+        <button class="start" id="startBtn" disabled>
+            START BOT
+        </button>
+
+        <button class="stop" id="stopBtn">
+            STOP BOT
+        </button>
+
+        <div class="warning">
+            ⚠️ V1 is an experimental strategy. It does not guarantee
+            profitable results. Use a Deriv demo account while testing.
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+let socket = null;
+let connected = false;
+let botRunning = false;
+
+let digits = [];
+
+const MAX_DIGITS = 20;
+
+const statusElement = document.getElementById("status");
+const balanceElement = document.getElementById("balance");
+const digitsElement = document.getElementById("digits");
+const evenPercentElement = document.getElementById("evenPercent");
+const oddPercentElement = document.getElementById("oddPercent");
+const signalElement = document.getElementById("signal");
+
+const connectBtn = document.getElementById("connectBtn");
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+
+
+function updateStatus(text) {
+    statusElement.textContent = text;
+}
+
+
+function connectToDeriv() {
+
+    if (socket) {
+        socket.close();
+    }
+
+    updateStatus("🟡 Connecting...");
+
+    /*
+       Public market-data connection.
+
+       We are deliberately starting with public
+       tick data before adding account trading.
+    */
+
+    socket = new WebSocket(
+        "wss://ws.derivws.com/websockets/v3?app_id=1089"
+    );
+
+    socket.onopen = function() {
+
+        connected = true;
+
+        updateStatus("🟢 Connected");
+
+        startBtn.disabled = false;
+
+        subscribeToTicks();
+    };
+
+
+    socket.onmessage = function(event) {
+
+        const data = JSON.parse(event.data);
+
+        console.log(data);
+
+        if (data.msg_type === "tick") {
+
+            processTick(data.tick);
+        }
+
+    };
+
+
+    socket.onerror = function() {
+
+        updateStatus("🔴 Connection error");
+
+    };
+
+
+    socket.onclose = function() {
+
+        connected = false;
+
+        startBtn.disabled = true;
+
+        updateStatus("🔴 Disconnected");
+
+    };
+
+}
+
+
+function subscribeToTicks() {
+
+    const request = {
+        ticks: "R_50",
+        subscribe: 1
+    };
+
+    socket.send(JSON.stringify(request));
+
+}
+
+
+function processTick(tick) {
+
+    const quote = tick.quote;
+
+    const digit = getLastDigit(quote);
+
+    digits.push(digit);
+
+    if (digits.length > MAX_DIGITS) {
+        digits.shift();
+    }
+
+    updateDigitDisplay();
+
+    calculateStatistics();
+
+    generateSignal();
+
+}
+
+
+function getLastDigit(number) {
+
+    const formatted = Number(number).toFixed(2);
+
+    const digitsOnly = formatted.replace(".", "");
+
+    return Number(
+        digitsOnly.charAt(digitsOnly.length - 1)
+    );
+
+}
+
+
+function updateDigitDisplay() {
+
+    if (digits.length === 0) {
+
+        digitsElement.textContent = "Waiting...";
+
+        return;
+    }
+
+    digitsElement.innerHTML = "";
+
+    digits.slice().reverse().forEach(function(digit) {
+
+        const element = document.createElement("div");
+
+        element.className = "digit";
+
+        element.textContent = digit;
+
+        digitsElement.appendChild(element);
+
+    });
+
+}
+
+
+function calculateStatistics() {
+
+    if (digits.length === 0) {
+        return;
+    }
+
+    let even = 0;
+    let odd = 0;
+
+    digits.forEach(function(digit) {
+
+        if (digit % 2 === 0) {
+            even++;
+        } else {
+            odd++;
+        }
+
+    });
+
+    const evenPercent =
+        ((even / digits.length) * 100).toFixed(1);
+
+    const oddPercent =
+        ((odd / digits.length) * 100).toFixed(1);
+
+    evenPercentElement.textContent =
+        evenPercent + "%";
+
+    oddPercentElement.textContent =
+        oddPercent + "%";
+
+}
+
+
+function generateSignal() {
+
+    if (digits.length < MAX_DIGITS) {
+
+        signalElement.textContent =
+            "COLLECTING DATA";
+
+        return;
+    }
+
+    let even = 0;
+    let odd = 0;
+
+    digits.forEach(function(digit) {
+
+        if (digit % 2 === 0) {
+            even++;
+        } else {
+            odd++;
+        }
+
+    });
+
+    const difference =
+        Math.abs(even - odd);
+
+    /*
+       We require an imbalance of at least
+       4 digits out of 20 before producing
+       a signal.
+    */
+
+    if (difference < 4) {
+
+        signalElement.textContent =
+            "WAIT — NO STRONG SIGNAL";
+
+        return;
+    }
+
+    if (even > odd) {
+
+        signalElement.textContent =
+            "SIGNAL: EVEN";
+
+    } else {
+
+        signalElement.textContent =
+            "SIGNAL: ODD";
+
+    }
+
+}
+
+
+connectBtn.addEventListener(
+    "click",
+    connectToDeriv
+);
+
+
+startBtn.addEventListener(
+    "click",
+    function() {
+
+        botRunning = true;
+
+        signalElement.textContent =
+            "BOT RUNNING — SIGNAL MODE";
+
+    }
+);
+
+
+stopBtn.addEventListener(
+    "click",
+    function() {
+
+        botRunning = false;
+
+        signalElement.textContent =
+            "BOT STOPPED";
+
+    }
+);
+
+</script>
+
+</body>
+</html>
