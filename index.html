@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deriv Even/Odd Bot</title>
+
+<title>V50 Even/Odd Bot</title>
 
 <style>
 * {
@@ -13,66 +14,119 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #0d1117;
+    background: #0b0f14;
     color: #ffffff;
 }
 
 .container {
-    max-width: 850px;
+    width: 100%;
+    max-width: 900px;
     margin: auto;
-    padding: 20px;
+    padding: 18px;
 }
 
 h1 {
     text-align: center;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .subtitle {
     text-align: center;
     color: #8b949e;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .card {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 12px;
+    background: #151b23;
+    border: 1px solid #303844;
+    border-radius: 14px;
     padding: 18px;
     margin-bottom: 15px;
 }
 
-.status {
-    text-align: center;
-    padding: 12px;
+label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 7px;
+    color: #c9d1d9;
+    font-weight: bold;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 13px;
     border-radius: 8px;
+    border: 1px solid #3b4450;
+    background: #0d1117;
+    color: white;
+    font-size: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 9px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.primary {
+    background: #2ea043;
+    color: white;
+}
+
+.secondary {
+    background: #1f6feb;
+    color: white;
+}
+
+.danger {
+    background: #da3633;
+    color: white;
+}
+
+button:disabled {
+    opacity: 0.45;
+}
+
+.status {
+    padding: 13px;
+    border-radius: 9px;
     background: #21262d;
-    margin-bottom: 15px;
+    text-align: center;
+    margin-bottom: 12px;
 }
 
 .balance {
-    font-size: 25px;
-    font-weight: bold;
     text-align: center;
+    font-size: 27px;
+    font-weight: bold;
+    margin: 15px 0;
 }
 
 .stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
-    margin-top: 15px;
 }
 
 .stat {
     background: #21262d;
+    border-radius: 9px;
     padding: 15px;
-    border-radius: 8px;
     text-align: center;
 }
 
-.stat span {
-    display: block;
-    font-size: 22px;
+.stat-title {
+    color: #8b949e;
+}
+
+.stat-value {
+    font-size: 24px;
     font-weight: bold;
     margin-top: 5px;
 }
@@ -81,65 +135,49 @@ h1 {
     display: flex;
     flex-wrap: wrap;
     gap: 7px;
-    margin-top: 10px;
+    margin-top: 12px;
 }
 
 .digit {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #21262d;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
+    background: #21262d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-weight: bold;
+    font-size: 17px;
 }
 
 .signal {
     text-align: center;
-    font-size: 25px;
+    font-size: 24px;
     font-weight: bold;
     padding: 20px;
-    background: #21262d;
     border-radius: 10px;
-    margin-top: 15px;
+    background: #21262d;
 }
 
-button {
-    width: 100%;
-    padding: 14px;
-    border: 0;
+.log {
+    background: #090c10;
     border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    margin-top: 10px;
-    cursor: pointer;
+    padding: 12px;
+    height: 170px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
 }
 
-.connect {
-    background: #2ea043;
-    color: white;
-}
-
-.start {
-    background: #238636;
-    color: white;
-}
-
-.stop {
-    background: #da3633;
-    color: white;
-}
-
-button:disabled {
-    opacity: 0.5;
-}
-
-.warning {
-    color: #f0f6fc;
-    font-size: 13px;
+.small {
+    color: #8b949e;
+    font-size: 12px;
     line-height: 1.5;
-    margin-top: 15px;
+}
+
+.hidden {
+    display: none;
 }
 </style>
 </head>
@@ -148,366 +186,1254 @@ button:disabled {
 
 <div class="container">
 
-    <h1>DERIV EVEN/ODD BOT</h1>
-    <div class="subtitle">
-        Volatility 50 Index
-    </div>
+<h1>V50 EVEN/ODD BOT</h1>
 
-    <div class="card">
+<div class="subtitle">
+Real Deriv API connection • Volatility 50 Index
+</div>
 
-        <div id="status" class="status">
-            🔴 Disconnected
-        </div>
 
-        <div class="balance">
-            Balance: <span id="balance">$--</span>
-        </div>
+<!-- AUTHENTICATION -->
 
-        <button class="connect" id="connectBtn">
-            CONNECT TO DERIV
-        </button>
+<div class="card">
 
-    </div>
+<h3>Deriv API Authentication</h3>
 
-    <div class="card">
+<label>Personal Access Token</label>
 
-        <h3>Market Data</h3>
+<input
+    id="token"
+    type="password"
+    placeholder="Paste your Deriv PAT here"
+    autocomplete="off"
+>
 
-        <div class="stats">
+<div class="small">
+Your token is used only in this browser session.
+Do not put it inside GitHub code.
+</div>
 
-            <div class="stat">
-                Even
-                <span id="evenPercent">--%</span>
-            </div>
 
-            <div class="stat">
-                Odd
-                <span id="oddPercent">--%</span>
-            </div>
+<label>Deriv App ID</label>
 
-        </div>
+<input
+    id="appId"
+    type="text"
+    placeholder="Enter your Deriv App ID"
+>
 
-        <h3>Recent Digits</h3>
 
-        <div class="digits" id="digits">
-            Waiting...
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <h3>Strategy Signal</h3>
-
-        <div class="signal" id="signal">
-            WAITING FOR DATA
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <h3>Bot Controls</h3>
-
-        <button class="start" id="startBtn" disabled>
-            START BOT
-        </button>
-
-        <button class="stop" id="stopBtn">
-            STOP BOT
-        </button>
-
-        <div class="warning">
-            ⚠️ V1 is an experimental strategy. It does not guarantee
-            profitable results. Use a Deriv demo account while testing.
-        </div>
-
-    </div>
+<button
+    id="loadAccountsBtn"
+    class="primary"
+>
+    CONNECT & LOAD ACCOUNTS
+</button>
 
 </div>
 
+
+<!-- ACCOUNT -->
+
+<div
+    id="accountCard"
+    class="card hidden"
+>
+
+<h3>Choose Trading Account</h3>
+
+<select id="accountSelect"></select>
+
+<button
+    id="connectTradingBtn"
+    class="secondary"
+>
+    CONNECT TO DERIV
+</button>
+
+</div>
+
+
+<!-- STATUS -->
+
+<div class="card">
+
+<div
+    id="status"
+    class="status"
+>
+🔴 Not connected
+</div>
+
+<div
+    id="balance"
+    class="balance"
+>
+Balance: --
+</div>
+
+</div>
+
+
+<!-- MARKET -->
+
+<div class="card">
+
+<h3>Volatility 50 Market</h3>
+
+<div class="stats">
+
+<div class="stat">
+
+<div class="stat-title">
+Even
+</div>
+
+<div
+    id="evenPercent"
+    class="stat-value"
+>
+--%
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-title">
+Odd
+</div>
+
+<div
+    id="oddPercent"
+    class="stat-value"
+>
+--%
+</div>
+
+</div>
+
+</div>
+
+
+<h3>Latest Digits</h3>
+
+<div
+    id="digits"
+    class="digits"
+>
+Waiting for ticks...
+</div>
+
+</div>
+
+
+<!-- STRATEGY -->
+
+<div class="card">
+
+<h3>Experimental Signal</h3>
+
+<div
+    id="signal"
+    class="signal"
+>
+WAITING FOR 20 DIGITS
+</div>
+
+</div>
+
+
+<!-- CONTROLS -->
+
+<div class="card">
+
+<h3>Bot Controls</h3>
+
+<button
+    id="startBtn"
+    class="primary"
+    disabled
+>
+START SIGNAL ENGINE
+</button>
+
+<button
+    id="stopBtn"
+    class="danger"
+>
+STOP
+</button>
+
+<p class="small">
+V1 does not place contracts. It collects live data and generates
+experimental Even/Odd signals. Demo testing comes before automatic
+trade execution.
+</p>
+
+</div>
+
+
+<!-- LOG -->
+
+<div class="card">
+
+<h3>Connection Log</h3>
+
+<div
+    id="log"
+    class="log"
+>
+Bot initialized.
+</div>
+
+</div>
+
+</div>
+
+
 <script>
 
+const API_BASE =
+    "https://api.derivws.com";
+
+const SYMBOL =
+    "R_50";
+
 let socket = null;
+
 let connected = false;
+
 let botRunning = false;
 
 let digits = [];
 
 const MAX_DIGITS = 20;
 
-const statusElement = document.getElementById("status");
-const balanceElement = document.getElementById("balance");
-const digitsElement = document.getElementById("digits");
-const evenPercentElement = document.getElementById("evenPercent");
-const oddPercentElement = document.getElementById("oddPercent");
-const signalElement = document.getElementById("signal");
-
-const connectBtn = document.getElementById("connectBtn");
-const startBtn = document.getElementById("startBtn");
-const stopBtn = document.getElementById("stopBtn");
+let accounts = [];
 
 
-function updateStatus(text) {
-    statusElement.textContent = text;
+/* ELEMENTS */
+
+const tokenInput =
+    document.getElementById("token");
+
+const appIdInput =
+    document.getElementById("appId");
+
+const loadAccountsBtn =
+    document.getElementById("loadAccountsBtn");
+
+const accountCard =
+    document.getElementById("accountCard");
+
+const accountSelect =
+    document.getElementById("accountSelect");
+
+const connectTradingBtn =
+    document.getElementById("connectTradingBtn");
+
+const statusElement =
+    document.getElementById("status");
+
+const balanceElement =
+    document.getElementById("balance");
+
+const digitsElement =
+    document.getElementById("digits");
+
+const evenPercentElement =
+    document.getElementById("evenPercent");
+
+const oddPercentElement =
+    document.getElementById("oddPercent");
+
+const signalElement =
+    document.getElementById("signal");
+
+const startBtn =
+    document.getElementById("startBtn");
+
+const stopBtn =
+    document.getElementById("stopBtn");
+
+const logElement =
+    document.getElementById("log");
+
+
+/* LOG */
+
+function log(message) {
+
+    const time =
+        new Date().toLocaleTimeString();
+
+    logElement.textContent +=
+        "\n[" + time + "] " + message;
+
+    logElement.scrollTop =
+        logElement.scrollHeight;
+
 }
 
 
-function connectToDeriv() {
+/* STATUS */
 
-    if (socket) {
-        socket.close();
+function setStatus(message) {
+
+    statusElement.textContent =
+        message;
+
+}
+
+
+/* GET TOKEN */
+
+function getToken() {
+
+    return tokenInput.value.trim();
+
+}
+
+
+/* GET APP ID */
+
+function getAppId() {
+
+    return appIdInput.value.trim();
+
+}
+
+
+/* LOAD ACCOUNTS */
+
+async function loadAccounts() {
+
+    const token = getToken();
+
+    const appId = getAppId();
+
+    if (!token) {
+
+        alert(
+            "Paste your Deriv Personal Access Token."
+        );
+
+        return;
     }
 
-    updateStatus("🟡 Connecting...");
+    if (!appId) {
 
-    /*
-       Public market-data connection.
+        alert(
+            "Enter your Deriv App ID."
+        );
 
-       We are deliberately starting with public
-       tick data before adding account trading.
-    */
+        return;
+    }
 
-    socket = new WebSocket(
-        "wss://ws.derivws.com/websockets/v3?app_id=1089"
+
+    loadAccountsBtn.disabled = true;
+
+    setStatus(
+        "🟡 Authenticating..."
     );
 
-    socket.onopen = function() {
-
-        connected = true;
-
-        updateStatus("🟢 Connected");
-
-        startBtn.disabled = false;
-
-        subscribeToTicks();
-    };
+    log(
+        "Requesting Deriv accounts..."
+    );
 
 
-    socket.onmessage = function(event) {
+    try {
 
-        const data = JSON.parse(event.data);
+        const response =
+            await fetch(
+                API_BASE +
+                "/trading/v1/options/accounts",
+                {
+                    method: "GET",
 
-        console.log(data);
+                    headers: {
 
-        if (data.msg_type === "tick") {
+                        "Authorization":
+                            "Bearer " + token,
 
-            processTick(data.tick);
+                        "Deriv-App-ID":
+                            appId
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                getApiError(data)
+            );
+
         }
 
-    };
+
+        accounts =
+            data.data ||
+            data.accounts ||
+            [];
 
 
-    socket.onerror = function() {
+        if (!Array.isArray(accounts) ||
+            accounts.length === 0) {
 
-        updateStatus("🔴 Connection error");
+            throw new Error(
+                "No Options accounts returned."
+            );
 
-    };
+        }
 
 
-    socket.onclose = function() {
+        accountSelect.innerHTML =
+            "";
 
-        connected = false;
 
-        startBtn.disabled = true;
+        accounts.forEach(
+            function(account) {
 
-        updateStatus("🔴 Disconnected");
+                const option =
+                    document.createElement(
+                        "option"
+                    );
 
-    };
+                option.value =
+                    account.id ||
+                    account.account_id ||
+                    account.loginid;
+
+                const type =
+                    account.account_type ||
+                    account.type ||
+                    "";
+
+                const currency =
+                    account.currency ||
+                    "";
+
+                option.textContent =
+                    option.value +
+                    " — " +
+                    type +
+                    " — " +
+                    currency;
+
+                accountSelect.appendChild(
+                    option
+                );
+
+            }
+
+        );
+
+
+        accountCard.classList.remove(
+            "hidden"
+        );
+
+
+        setStatus(
+            "🟢 API authentication successful"
+        );
+
+        log(
+            "Accounts loaded: " +
+            accounts.length
+        );
+
+
+        loadAccountsBtn.textContent =
+            "ACCOUNTS LOADED";
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        setStatus(
+            "🔴 Authentication failed"
+        );
+
+        log(
+            "ERROR: " +
+            error.message
+        );
+
+        alert(
+            "Connection failed:\n\n" +
+            error.message
+        );
+
+    } finally {
+
+        loadAccountsBtn.disabled =
+            false;
+
+    }
 
 }
 
 
-function subscribeToTicks() {
+/* API ERROR */
 
-    const request = {
-        ticks: "R_50",
-        subscribe: 1
-    };
+function getApiError(data) {
 
-    socket.send(JSON.stringify(request));
+    if (
+        data &&
+        data.errors &&
+        data.errors.length
+    ) {
+
+        return data.errors
+            .map(
+                e =>
+                    e.message ||
+                    e.code ||
+                    "API error"
+            )
+            .join("\n");
+
+    }
+
+    return (
+        data.message ||
+        "Unknown Deriv API error"
+    );
 
 }
 
+
+/* CONNECT TRADING SOCKET */
+
+async function connectTrading() {
+
+    const token =
+        getToken();
+
+    const appId =
+        getAppId();
+
+    const accountId =
+        accountSelect.value;
+
+
+    if (!token ||
+        !appId ||
+        !accountId) {
+
+        alert(
+            "Token, App ID and account are required."
+        );
+
+        return;
+
+    }
+
+
+    connectTradingBtn.disabled =
+        true;
+
+    setStatus(
+        "🟡 Requesting secure WebSocket..."
+    );
+
+
+    try {
+
+        /*
+          Current Deriv API authentication:
+
+          PAT
+             ↓
+          REST OTP
+             ↓
+          authenticated WebSocket
+        */
+
+        const response =
+            await fetch(
+                API_BASE +
+                "/trading/v1/options/accounts/" +
+                encodeURIComponent(accountId) +
+                "/otp",
+                {
+                    method: "POST",
+
+                    headers: {
+
+                        "Authorization":
+                            "Bearer " + token,
+
+                        "Deriv-App-ID":
+                            appId
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                getApiError(data)
+            );
+
+        }
+
+
+        const wsUrl =
+            data.data &&
+            data.data.url;
+
+
+        if (!wsUrl) {
+
+            throw new Error(
+                "Deriv did not return a WebSocket URL."
+            );
+
+        }
+
+
+        log(
+            "Secure WebSocket URL received."
+        );
+
+
+        openSocket(wsUrl);
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        setStatus(
+            "🔴 WebSocket authentication failed"
+        );
+
+        log(
+            "ERROR: " +
+            error.message
+        );
+
+        alert(
+            "Trading connection failed:\n\n" +
+            error.message
+        );
+
+    } finally {
+
+        connectTradingBtn.disabled =
+            false;
+
+    }
+
+}
+
+
+/* OPEN SOCKET */
+
+function openSocket(wsUrl) {
+
+    if (socket) {
+
+        try {
+
+            socket.close();
+
+        } catch (e) {}
+
+    }
+
+
+    socket =
+        new WebSocket(wsUrl);
+
+
+    socket.onopen =
+        function() {
+
+            connected =
+                true;
+
+            setStatus(
+                "🟢 DERIV TRADING CONNECTION ACTIVE"
+            );
+
+            log(
+                "Authenticated WebSocket connected."
+            );
+
+
+            subscribeBalance();
+
+            subscribeTicks();
+
+
+            startBtn.disabled =
+                false;
+
+        };
+
+
+    socket.onmessage =
+        function(event) {
+
+            try {
+
+                const data =
+                    JSON.parse(
+                        event.data
+                    );
+
+                handleMessage(data);
+
+            } catch (error) {
+
+                log(
+                    "Message error: " +
+                    error.message
+                );
+
+            }
+
+        };
+
+
+    socket.onerror =
+        function(error) {
+
+            console.error(error);
+
+            setStatus(
+                "🔴 WebSocket error"
+            );
+
+            log(
+                "WebSocket error."
+            );
+
+        };
+
+
+    socket.onclose =
+        function() {
+
+            connected =
+                false;
+
+            startBtn.disabled =
+                true;
+
+            setStatus(
+                "🔴 Disconnected"
+            );
+
+            log(
+                "WebSocket closed."
+            );
+
+        };
+
+}
+
+
+/* BALANCE */
+
+function subscribeBalance() {
+
+    socket.send(
+        JSON.stringify({
+
+            balance: 1,
+
+            subscribe: 1,
+
+            req_id: 100
+
+        })
+    );
+
+}
+
+
+/* TICKS */
+
+function subscribeTicks() {
+
+    socket.send(
+        JSON.stringify({
+
+            ticks: SYMBOL,
+
+            subscribe: 1,
+
+            req_id: 200
+
+        })
+    );
+
+    log(
+        "Subscribed to Volatility 50 ticks."
+    );
+
+}
+
+
+/* HANDLE MESSAGES */
+
+function handleMessage(data) {
+
+    if (data.error) {
+
+        log(
+            "DERIV ERROR: " +
+            (
+                data.error.message ||
+                data.error.code ||
+                "Unknown error"
+            )
+        );
+
+        return;
+
+    }
+
+
+    if (
+        data.msg_type ===
+        "balance"
+    ) {
+
+        const balance =
+            data.balance;
+
+
+        const value =
+            balance.balance;
+
+
+        const currency =
+            balance.currency ||
+            "";
+
+
+        balanceElement.textContent =
+            "Balance: " +
+            value +
+            " " +
+            currency;
+
+        return;
+
+    }
+
+
+    if (
+        data.msg_type ===
+        "tick"
+    ) {
+
+        processTick(
+            data.tick
+        );
+
+        return;
+
+    }
+
+}
+
+
+/* PROCESS TICK */
 
 function processTick(tick) {
 
-    const quote = tick.quote;
-
-    const digit = getLastDigit(quote);
-
-    digits.push(digit);
-
-    if (digits.length > MAX_DIGITS) {
-        digits.shift();
-    }
-
-    updateDigitDisplay();
-
-    calculateStatistics();
-
-    generateSignal();
-
-}
-
-
-function getLastDigit(number) {
-
-    const formatted = Number(number).toFixed(2);
-
-    const digitsOnly = formatted.replace(".", "");
-
-    return Number(
-        digitsOnly.charAt(digitsOnly.length - 1)
-    );
-
-}
-
-
-function updateDigitDisplay() {
-
-    if (digits.length === 0) {
-
-        digitsElement.textContent = "Waiting...";
-
+    if (!tick) {
         return;
     }
 
-    digitsElement.innerHTML = "";
 
-    digits.slice().reverse().forEach(function(digit) {
-
-        const element = document.createElement("div");
-
-        element.className = "digit";
-
-        element.textContent = digit;
-
-        digitsElement.appendChild(element);
-
-    });
-
-}
+    const quote =
+        Number(
+            tick.quote
+        );
 
 
-function calculateStatistics() {
-
-    if (digits.length === 0) {
+    if (!Number.isFinite(quote)) {
         return;
     }
 
-    let even = 0;
-    let odd = 0;
-
-    digits.forEach(function(digit) {
-
-        if (digit % 2 === 0) {
-            even++;
-        } else {
-            odd++;
-        }
-
-    });
-
-    const evenPercent =
-        ((even / digits.length) * 100).toFixed(1);
-
-    const oddPercent =
-        ((odd / digits.length) * 100).toFixed(1);
-
-    evenPercentElement.textContent =
-        evenPercent + "%";
-
-    oddPercentElement.textContent =
-        oddPercent + "%";
-
-}
-
-
-function generateSignal() {
-
-    if (digits.length < MAX_DIGITS) {
-
-        signalElement.textContent =
-            "COLLECTING DATA";
-
-        return;
-    }
-
-    let even = 0;
-    let odd = 0;
-
-    digits.forEach(function(digit) {
-
-        if (digit % 2 === 0) {
-            even++;
-        } else {
-            odd++;
-        }
-
-    });
-
-    const difference =
-        Math.abs(even - odd);
 
     /*
-       We require an imbalance of at least
-       4 digits out of 20 before producing
-       a signal.
+      Deriv tick precision is supplied
+      with the tick. Use that precision
+      when possible.
     */
 
-    if (difference < 4) {
+    const pipSize =
+        Number(
+            tick.pip_size
+        );
+
+
+    let formatted;
+
+
+    if (
+        Number.isInteger(
+            pipSize
+        ) &&
+        pipSize >= 0 &&
+        pipSize <= 10
+    ) {
+
+        formatted =
+            quote.toFixed(
+                pipSize
+            );
+
+    } else {
+
+        formatted =
+            String(quote);
+
+    }
+
+
+    const clean =
+        formatted.replace(
+            /[^0-9]/g,
+            ""
+        );
+
+
+    if (!clean.length) {
+        return;
+    }
+
+
+    const lastDigit =
+        Number(
+            clean.charAt(
+                clean.length - 1
+            )
+        );
+
+
+    digits.push(
+        lastDigit
+    );
+
+
+    if (
+        digits.length >
+        MAX_DIGITS
+    ) {
+
+        digits.shift();
+
+    }
+
+
+    updateDigits();
+
+    updateStatistics();
+
+    updateSignal();
+
+}
+
+
+/* DISPLAY DIGITS */
+
+function updateDigits() {
+
+    if (
+        digits.length === 0
+    ) {
+
+        digitsElement.textContent =
+            "Waiting for ticks...";
+
+        return;
+
+    }
+
+
+    digitsElement.innerHTML =
+        "";
+
+
+    digits
+        .slice()
+        .reverse()
+        .forEach(
+            function(digit) {
+
+                const el =
+                    document.createElement(
+                        "div"
+                    );
+
+                el.className =
+                    "digit";
+
+                el.textContent =
+                    digit;
+
+                digitsElement.appendChild(
+                    el
+                );
+
+            }
+        );
+
+}
+
+
+/* STATISTICS */
+
+function updateStatistics() {
+
+    if (
+        digits.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    let even =
+        0;
+
+    let odd =
+        0;
+
+
+    digits.forEach(
+        function(digit) {
+
+            if (
+                digit % 2 === 0
+            ) {
+
+                even++;
+
+            } else {
+
+                odd++;
+
+            }
+
+        }
+    );
+
+
+    const evenPercent =
+        (
+            even /
+            digits.length *
+            100
+        ).toFixed(1);
+
+
+    const oddPercent =
+        (
+            odd /
+            digits.length *
+            100
+        ).toFixed(1);
+
+
+    evenPercentElement.textContent =
+        evenPercent +
+        "%";
+
+
+    oddPercentElement.textContent =
+        oddPercent +
+        "%";
+
+}
+
+
+/* SIGNAL ENGINE */
+
+function updateSignal() {
+
+    if (
+        digits.length <
+        MAX_DIGITS
+    ) {
+
+        signalElement.textContent =
+            "COLLECTING 20 DIGITS";
+
+        return;
+
+    }
+
+
+    let even =
+        0;
+
+    let odd =
+        0;
+
+
+    digits.forEach(
+        function(digit) {
+
+            if (
+                digit % 2 === 0
+            ) {
+
+                even++;
+
+            } else {
+
+                odd++;
+
+            }
+
+        }
+    );
+
+
+    const difference =
+        Math.abs(
+            even - odd
+        );
+
+
+    if (
+        !botRunning
+    ) {
+
+        signalElement.textContent =
+            "SIGNAL ENGINE STOPPED";
+
+        return;
+
+    }
+
+
+    /*
+      Experimental threshold:
+      at least 4-digit difference
+      within the last 20 digits.
+    */
+
+    if (
+        difference < 4
+    ) {
 
         signalElement.textContent =
             "WAIT — NO STRONG SIGNAL";
 
         return;
+
     }
 
-    if (even > odd) {
+
+    if (
+        even > odd
+    ) {
 
         signalElement.textContent =
-            "SIGNAL: EVEN";
+            "EXPERIMENTAL SIGNAL: EVEN";
 
     } else {
 
         signalElement.textContent =
-            "SIGNAL: ODD";
+            "EXPERIMENTAL SIGNAL: ODD";
 
     }
+
 
 }
 
 
-connectBtn.addEventListener(
-    "click",
-    connectToDeriv
-);
-
+/* START */
 
 startBtn.addEventListener(
     "click",
     function() {
 
-        botRunning = true;
+        if (!connected) {
+
+            alert(
+                "Connect to Deriv first."
+            );
+
+            return;
+
+        }
+
+
+        botRunning =
+            true;
+
 
         signalElement.textContent =
-            "BOT RUNNING — SIGNAL MODE";
+            "SIGNAL ENGINE RUNNING";
+
+
+        log(
+            "Signal engine started."
+        );
 
     }
 );
 
 
+/* STOP */
+
 stopBtn.addEventListener(
     "click",
     function() {
 
-        botRunning = false;
+        botRunning =
+            false;
+
 
         signalElement.textContent =
             "BOT STOPPED";
 
+
+        log(
+            "Bot stopped."
+        );
+
     }
+);
+
+
+/* BUTTONS */
+
+loadAccountsBtn.addEventListener(
+    "click",
+    loadAccounts
+);
+
+
+connectTradingBtn.addEventListener(
+    "click",
+    connectTrading
 );
 
 </script>
